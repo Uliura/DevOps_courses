@@ -17,12 +17,12 @@ sixes=0
 print_result ()
 {
 echo
-echo "единиц   =   $ones"
-echo "двоек    =   $twos"
-echo "троек    =   $threes"
-echo "четверок =   $fours"
-echo "пятерок  =   $fives"
-echo "шестерок =   $sixes"
+echo "ones   =   $ones"
+echo "twos    =   $twos"
+echo "threes    =   $threes"
+echo "fours =   $fours"
+echo "fives  =   $fives"
+echo "sixes =   $sixes"
 echo
 }
 

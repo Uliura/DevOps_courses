@@ -1,2 +1,2 @@
 #!/bin/bash
-echo "Количество дней, прошедших с начала года: $(date +%j)."
+echo "Number of days since the beginning of the year:$(date +%j)."

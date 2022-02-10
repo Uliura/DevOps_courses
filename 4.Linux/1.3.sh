@@ -1,9 +1,9 @@
 #!/bin/bash
-echo "Введите строку. У вас есть 5 секунд."
+echo "Input a string. You have 5 seconds"
 read -rt 5 variable <&1
 if [ -z "$variable" ]
 then
-  echo "Время ожидания истекло."
+  echo "Time out"
 else
   echo "$variable"
 fi

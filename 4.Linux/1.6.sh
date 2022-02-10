@@ -1,16 +1,16 @@
 #!/bin/bash
 
-echo; echo "Нажмите клавишу и затем Enter."
+echo; echo "Press the key and then Enter."
 read -r Keypress
 if [ ${#Keypress} = 1 ]
 then
 case "$Keypress" in
-  [a-z]   ) echo "буква в нижнем регистре";;
-  [A-Z]   ) echo "Буква в верхнем регистре";;
-  [0-9]   ) echo "Цифра";;
-  *       ) echo "Знак пунктуации, пробел или что-то другое";;
+  [a-z]   ) echo "Lower case letter";;
+  [A-Z]   ) echo "Upper case letter";;
+  [0-9]   ) echo "Digit";;
+  *       ) echo "Punctuation, space, or something else";;
 esac
 else
-  echo "Вы нажали больше одной клавиши"
+  echo "You pressed more than one key"
 fi
 exit 0

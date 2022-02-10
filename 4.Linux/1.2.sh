@@ -1,4 +1,4 @@
 #!/bin/bash
-echo "Введите строку"
+echo "Input string"
 read -r STR
 echo "$STR"

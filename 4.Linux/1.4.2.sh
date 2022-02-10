@@ -1,2 +1,2 @@
 #!/bin/bash
-echo "Количество секунд, прошедших с начала "эпохи UNIX" : $(date +%s)."
+echo "Number of seconds since the UNIX era : $(date +%s)."

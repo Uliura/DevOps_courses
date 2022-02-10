@@ -1,5 +1,5 @@
 #!/bin/bash
-echo "Введите количество метров"
+echo "Enter the number of meters"
 read -r STR
 miles=$(( STR / 1609 ))
 echo "$miles"
