@@ -1,0 +1,58 @@
+---
+- hosts: all
+  become: true
+  tasks:
+    - name: Update apt
+      apt: update_cache=yes
+
+    - name: Install nginx
+      apt:
+        name: nginx
+        state: latest
+
+    - name: Install java
+      apt:
+        name: default-jdk
+        state: latest
+        install_recommends: no
+
+    - name: download tomcat server packages
+      get_url:
+        url: https://dlcdn.apache.org/tomcat/tomcat-10/v10.0.16/bin/apache-tomcat-10.0.16.tar.gz
+        dest: /usr/local
+
+    - name: extract tomcat packages
+      unarchive:
+        src: /usr/local/apache-tomcat-10.0.16.tar.gz
+        dest: /usr/local
+        remote_src: yes
+
+    - name: start tomcat services
+      shell: nohup /usr/local/apache-tomcat-10.0.16/bin/startup.sh
+
+    - name: Install apt
+      apt:
+        name:
+          - software-properties-common
+          - dirmngr
+          - apt-transport-https
+
+    - name: Add an Apt signing key
+      ansible.builtin.apt_key:
+        url: https://mariadb.org/mariadb_release_signing_key.asc
+        state: present
+
+    - name: Add specified repository into sources list
+      ansible.builtin.apt_repository:
+        repo: deb [arch=amd64,arm64,ppc64el] https://mirror.docker.ru/mariadb/repo/10.7/ubuntu bionic main
+        state: present
+
+    - name: Update apt packages
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+
+    - name: Install MariaDB server
+      apt:
+        name:
+          - mariadb-server
