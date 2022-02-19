@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: testpod
+  namespace: kubetest
+  labels:
+    app: testpod
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: testpod
+  template:
+    metadata:
+      labels:
+        app: testpod
+    spec:
+      containers:
+      - name: testpod
+        image: gcr.io/google-samples/hello-app:1.0
+        ports:
+        - containerPort: 80
