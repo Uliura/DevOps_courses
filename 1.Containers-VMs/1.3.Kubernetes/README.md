@@ -17,7 +17,7 @@
     kubectl get all
     а также все написаные вами фалы конфигурации
 
-
+servicev2.yaml - версия с ClusterIP вместо NodePort
 
 minikube addons enable ingress - включение ingress-nginx из аддонов minicube
 kubens kubetest - переключение namespace по умолчанию на kubetest
