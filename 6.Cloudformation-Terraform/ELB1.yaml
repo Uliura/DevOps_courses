@@ -1,0 +1,44 @@
+---
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description: AWS CloudFormation Nested LoadBalancer Stack
+
+Resources:
+  ELB:
+    Type: AWS::ElasticLoadBalancing::LoadBalancer
+    Properties:
+      CrossZone: 'true'
+      HealthCheck:
+        Target: HTTP:80/
+        HealthyThreshold: '2'
+        UnhealthyThreshold: '3'
+        Interval: '10'
+        Timeout: '5'
+      Instances:
+        - !ImportValue Nginx1
+        - !ImportValue Nginx2
+      Listeners:
+        - InstancePort: '80'
+          InstanceProtocol: HTTP
+          LoadBalancerPort: '80'
+          Protocol: HTTP
+      LoadBalancerName: ELB
+      SecurityGroups:
+        - !ImportValue SecurityGroupID
+      Subnets:
+        - !ImportValue PublicA
+        - !ImportValue PublicB
+      Tags:
+      - Key: Name
+        Value:
+          !Join
+          - ''
+          - - 'elb-'
+            - !Ref 'AWS::StackName'
+
+Outputs:
+  ELB:
+    Description: ELB name
+    Value: !Ref ELB
+    Export:
+      Name: ELB

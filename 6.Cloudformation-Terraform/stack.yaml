@@ -1,0 +1,44 @@
+---
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description:
+  AWS CloudFormation Template to Create All Resource from AWS Basics
+
+Resources:
+  VPC:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: https://devops-cloud-formation.s3.eu-central-1.amazonaws.com/VPC.yaml
+      Parameters:
+        VPCBlock: 10.0.0.0/16
+        Environment: Itr-devops-course
+
+  SecurityGroups:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: https://devops-cloud-formation.s3.eu-central-1.amazonaws.com/SG.yaml
+    DependsOn: [ 'VPC' ]
+
+  EC2:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: https://devops-cloud-formation.s3.eu-central-1.amazonaws.com/EC2.yaml
+    DependsOn: [ 'SecurityGroups' ]
+
+  ELB:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: https://devops-cloud-formation.s3.eu-central-1.amazonaws.com/ELB2.yaml
+    DependsOn: [ 'EC2' ]
+
+  RDS:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: https://devops-cloud-formation.s3.eu-central-1.amazonaws.com/RDS.yaml
+    DependsOn: [ 'SecurityGroups' ]
+
+  ElacticCache:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: https://devops-cloud-formation.s3.eu-central-1.amazonaws.com/ElastiCache.yaml
+    DependsOn: [ 'SecurityGroups' ]

@@ -1,0 +1,78 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: "AWS CloudFormation Nested EC2 nginx"
+
+Resources:
+  Nginx1:
+    Type: 'AWS::EC2::Instance'
+    Properties:
+      InstanceType: t2.micro
+      ImageId: ami-0c02fb55956c7d316
+      NetworkInterfaces:
+        - GroupSet:
+            - !ImportValue SecurityGroupID
+          AssociatePublicIpAddress: 'true'
+          DeviceIndex: '0'
+          DeleteOnTermination: 'true'
+          SubnetId: !ImportValue PublicA
+      AvailabilityZone: !Select [ 0, "Fn::GetAZs": { Ref: "AWS::Region" } ]
+      KeyName: devops-course
+      UserData:
+        Fn::Base64: |
+          !Sub |
+            #!/bin/bash
+            echo "-------------------START-------------------"
+            sudo amazon-linux-extras install nginx1 -y
+            sudo systemctl enable nginx
+            sudo systemctl start nginx
+            echo "-------------------FINISH------------------"
+      Tags:
+      - Key: Name
+        Value:
+          !Join
+          - ''
+          - - 'nginx1-'
+            - !Ref 'AWS::StackName'
+
+  Nginx2:
+    Type: 'AWS::EC2::Instance'
+    Properties:
+      InstanceType: t2.micro
+      ImageId: ami-0c02fb55956c7d316
+      NetworkInterfaces:
+        - GroupSet:
+            - !ImportValue SecurityGroupID
+          AssociatePublicIpAddress: 'true'
+          DeviceIndex: '0'
+          DeleteOnTermination: 'true'
+          SubnetId: !ImportValue PublicB
+      AvailabilityZone: !Select [ 1, "Fn::GetAZs": { Ref: "AWS::Region" } ]
+      KeyName: devops-course
+      UserData:
+        Fn::Base64: |
+          !Sub |
+            #!/bin/bash
+            echo "-------------------START-------------------"
+            sudo amazon-linux-extras install nginx1 -y
+            sudo systemctl enable nginx
+            sudo systemctl start nginx
+            echo "-------------------FINISH------------------"
+      Tags:
+      - Key: Name
+        Value:
+          !Join
+          - ''
+          - - 'nginx2-'
+            - !Ref 'AWS::StackName'
+
+Outputs:
+  Nginx1:
+    Description: The Instance ID
+    Value: !Ref Nginx1
+    Export:
+      Name: Nginx1
+
+  Nginx2:
+    Description: The Instance ID
+    Value: !Ref Nginx2
+    Export:
+      Name: Nginx2

@@ -1,0 +1,46 @@
+---
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description: AWS CloudFormation Nested CacheClusters Stack
+
+Resources:
+
+  Redis:
+    Type: AWS::ElastiCache::CacheCluster
+    Properties:
+      ClusterName: RedisCacheCluter
+      Engine: redis
+      CacheNodeType: cache.t2.micro
+      NumCacheNodes: '1'
+      EngineVersion: 6.2
+      Port: 6379
+      CacheSubnetGroupName: ElastiCacheSubnetGroup
+      VpcSecurityGroupIds:
+        - !ImportValue SecurityGroupID
+      Tags:
+      - Key: Name
+        Value:
+          !Join
+          - ''
+          - - 'redis-'
+            - !Ref 'AWS::StackName'
+
+  Memcached:
+    Type: AWS::ElastiCache::CacheCluster
+    Properties:
+      ClusterName: MemcachedCacheCluter
+      Engine: memcached
+      CacheNodeType: cache.t2.micro
+      NumCacheNodes: '1'
+      EngineVersion: 1.6.6
+      Port: 11211
+      CacheSubnetGroupName: ElastiCacheSubnetGroup
+      VpcSecurityGroupIds:
+        - !ImportValue SecurityGroupID
+      Tags:
+      - Key: Name
+        Value:
+          !Join
+          - ''
+          - - 'memcached-'
+            - !Ref 'AWS::StackName'

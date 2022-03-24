@@ -1,0 +1,54 @@
+Resources:
+  LoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Name: ELB
+      Subnets:
+        - !ImportValue PublicA
+        - !ImportValue PublicB
+      SecurityGroups:
+        - !ImportValue SecurityGroupID
+      Tags:
+      - Key: Name
+        Value:
+          !Join
+          - ''
+          - - 'elb-'
+            - !Ref 'AWS::StackName'
+
+  LoadBalancerListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      LoadBalancerArn: !Ref LoadBalancer
+      Port: 80
+      Protocol: HTTP
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref DefaultTargetGroup
+
+  # We define a default target group here, as this is a mandatory Parameters
+  # when creating an Application Load Balancer Listener. This is not used, instead
+  # a target group is created per-service in each service template (../services/*)
+  DefaultTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      HealthCheckEnabled: true
+      HealthCheckPath: /
+      HealthCheckProtocol: HTTP
+      Matcher:
+        HttpCode: '200'
+      Port: 80
+      Protocol: HTTP
+      ProtocolVersion: HTTP1
+      TargetType: instance
+      Targets:
+        - Id: !ImportValue Nginx1
+          Port: 80
+        - Id: !ImportValue Nginx2
+          Port: 80
+      Name: DefaultTargetGroup
+      HealthCheckIntervalSeconds: '10'
+      HealthyThresholdCount: '2'
+      UnhealthyThresholdCount: '3'
+      HealthCheckTimeoutSeconds: '5'
+      VpcId: !ImportValue VPC

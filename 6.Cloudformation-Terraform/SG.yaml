@@ -1,0 +1,50 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description: "AWS CloudFormation Nested SecurityGroup Stack"
+
+Resources:
+  SecurityGroup:
+      Type: AWS::EC2::SecurityGroup
+      Properties:
+          GroupDescription: "Open HTTP (port 80) and SSH (port 22)"
+          VpcId: !ImportValue VPC
+
+  SecurityGroupIngressMySSH:
+      Type: AWS::EC2::SecurityGroupIngress
+      Properties:
+          Description: "Allow SSH connections from MyIp"
+          GroupId: !Ref SecurityGroup
+          CidrIp: 0.0.0.0/0
+          IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+
+  SecurityGroupIngressHTTP:
+      Type: AWS::EC2::SecurityGroupIngress
+      Properties:
+          Description: "Allow HTTP inbound traffic"
+          GroupId: !Ref SecurityGroup
+          CidrIp: 0.0.0.0/0
+          IpProtocol: tcp
+          FromPort: 0
+          ToPort: 65535
+
+  SecurityGroupEgress:
+      Type: AWS::EC2::SecurityGroupEgress
+      Properties:
+          Description: "Allow all outbound traffic"
+          GroupId: !Ref SecurityGroup
+          CidrIp: 0.0.0.0/0
+          IpProtocol: tcp
+          FromPort: 0
+          ToPort: 65535
+
+Outputs:
+  SecurityGroup:
+    Description: The security group ID
+    Value:
+      'Fn::GetAtt':
+        - SecurityGroup
+        - GroupId
+    Export:
+      Name: SecurityGroupID

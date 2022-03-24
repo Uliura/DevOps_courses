@@ -1,0 +1,312 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: "AWS CloudFormation Nested Network: VPC, Subnets + RouteTables, Internet"
+
+Metadata:
+ AWS::CloudFormation::Interface:
+    ParameterGroups:
+      -
+        Label:
+          default: "Network Configuration"
+        Parameters:
+          - Environment
+          - VPCBlock
+      -
+        Label:
+          default: "Subnets CIDR Blocks"
+        Parameters:
+          - PublicSubnetACIDR
+          - PublicSubnetBCIDR
+          - PrivateSubnetACIDR
+Parameters:
+  Environment:
+    Type: String
+    Default: "DevOps-course"
+
+  VPCBlock:
+    Type: String
+    Default: '10.0.0.0/16'
+
+  PublicSubnetACIDR:
+    Type: String
+    Default: '10.0.10.0/24'
+    Description: "Public Subnet-A CIDR"
+
+  PublicSubnetBCIDR:
+    Type: String
+    Default: '10.0.11.0/24'
+    Description: "Public Subnet-B CIDR"
+
+  PrivateSubnetACIDR:
+    Type: String
+    Default: '10.0.20.0/24'
+    Description: "Private Subnet-A CIDR"
+
+  PrivateSubnetBCIDR:
+    Type: String
+    Default: '10.0.21.0/24'
+    Description: "Private Subnet-A CIDR"
+
+Resources:
+#============= VPC ==================
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:                              # Attach Primary CIDR Block
+      CidrBlock: !Ref VPCBlock
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags:
+      - Key: Name
+        Value:
+          !Join
+          - ''
+          - - 'vpc-'
+            - !Ref 'AWS::StackName'
+
+#====== Internet Gateway =======
+  GatewayInternet:
+    Type: "AWS::EC2::InternetGateway"
+    Properties:
+      Tags:
+      - Key: Name
+        Value:
+          !Join
+          - ''
+          - - 'ig-'
+            - !Ref 'AWS::StackName'
+
+  GatewayAttachmentInternet:                       # Attachment IGW to VPC
+    Type: "AWS::EC2::VPCGatewayAttachment"
+    Properties:
+      VpcId:  !Ref VPC
+      InternetGatewayId: !Ref GatewayInternet
+
+
+#====== Public RouteTables =========
+  RouteTableForPublicSubnet:                       # Creation of Empty Route Table
+    Type: "AWS::EC2::RouteTable"
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+      - Key: Name
+        Value:
+          !Join
+          - ''
+          - - 'public-route-table-'
+            - !Ref 'AWS::StackName'
+
+  RoutesForPublicRouteTable:                     # Creation and Attachment of Routes for Route Table
+    Type: "AWS::EC2::Route"
+    DependsOn: GatewayAttachmentInternet
+    Properties:
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref GatewayInternet
+      RouteTableId: !Ref RouteTableForPublicSubnet
+
+
+#====== Associate Public Route for Public Subnets
+  RouteAssociationPublicA:
+    Type: "AWS::EC2::SubnetRouteTableAssociation"
+    Properties:
+      RouteTableId: !Ref RouteTableForPublicSubnet
+      SubnetId: !Ref PublicSubnetA
+
+  RouteAssociationPublicB:
+    Type: "AWS::EC2::SubnetRouteTableAssociation"
+    Properties:
+      RouteTableId: !Ref RouteTableForPublicSubnet
+      SubnetId: !Ref PublicSubnetB
+
+
+#==== Route Table and Route Association for Internal only - Private
+
+  RouteTableForPrivateSubnet:
+    Type: "AWS::EC2::RouteTable"
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+      - Key: Name
+        Value:
+          !Join
+          - ''
+          - - 'private-route-table-'
+            - !Ref 'AWS::StackName'
+
+  RouteTableAssociationPrivateA:
+    Type: "AWS::EC2::SubnetRouteTableAssociation"
+    Properties:
+      RouteTableId: !Ref RouteTableForPrivateSubnet
+      SubnetId: !Ref PrivateSubnetA
+
+  RouteTableAssociationPrivateB:
+    Type: "AWS::EC2::SubnetRouteTableAssociation"
+    Properties:
+      RouteTableId: !Ref RouteTableForPrivateSubnet
+      SubnetId: !Ref PrivateSubnetB
+
+
+#============ ALL Subnets ======================================================
+  PublicSubnetA:
+    Type: "AWS::EC2::Subnet"
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: !Select [ 0, "Fn::GetAZs": { Ref: "AWS::Region" } ]
+      CidrBlock: !Ref "PublicSubnetACIDR"
+      MapPublicIpOnLaunch: true
+      Tags:
+      - Key: Name
+        Value:
+          !Join
+          - ''
+          - - 'public-a-'
+            - !Ref 'AWS::StackName'
+
+  PublicSubnetB:
+    Type: "AWS::EC2::Subnet"
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: !Select [ 1, "Fn::GetAZs": { Ref: "AWS::Region" } ]
+      CidrBlock: !Ref "PublicSubnetBCIDR"
+      MapPublicIpOnLaunch: true
+      Tags:
+      - Key: Name
+        Value:
+          !Join
+          - ''
+          - - 'public-b-'
+            - !Ref 'AWS::StackName'
+
+  PrivateSubnetA:
+    Type: "AWS::EC2::Subnet"
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: !Select [ 0, "Fn::GetAZs": { Ref: "AWS::Region" } ]
+      CidrBlock: !Ref "PrivateSubnetACIDR"
+      MapPublicIpOnLaunch: false
+      Tags:
+      - Key: Name
+        Value:
+          !Join
+          - ''
+          - - 'private-a-'
+            - !Ref 'AWS::StackName'
+
+  PrivateSubnetB:
+    Type: "AWS::EC2::Subnet"
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: !Select [ 1, "Fn::GetAZs": { Ref: "AWS::Region" } ]
+      CidrBlock: !Ref "PrivateSubnetBCIDR"
+      MapPublicIpOnLaunch: false
+      Tags:
+      - Key: Name
+        Value:
+          !Join
+          - ''
+          - - 'private-b-'
+            - !Ref 'AWS::StackName'
+
+#====== Network ACL for Private Subnet
+  # NACL
+  customPublicNACL:
+    Type: 'AWS::EC2::NetworkAcl'
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+      - Key: Name
+        Value:
+          !Join
+          - ''
+          - - 'nacl-'
+            - !Ref 'AWS::StackName'
+
+  # Allow all Incoming TCP traffic
+  customNaclRulesForInboundTCP:
+    Type: 'AWS::EC2::NetworkAclEntry'
+    Properties:
+      NetworkAclId: !Ref customPublicNACL
+      RuleNumber: '100'
+      Protocol: '6'  # tcp
+      RuleAction: allow
+      Egress: 'false'  # this rule applies to ingress traffic to the subnet
+      CidrBlock: 0.0.0.0/0  # any ip address
+      PortRange:
+        From: '0'
+        To: '65535'
+
+  # Allow all Outgoing TCP traffic
+  customNaclRulesForOutboundTCP:
+    Type: 'AWS::EC2::NetworkAclEntry'
+    Properties:
+      NetworkAclId: !Ref customPublicNACL
+      RuleNumber: '100'
+      Protocol: '6'  # tcp
+      RuleAction: allow
+      Egress: 'true'  # this rule applies to egress traffic from the subnet
+      CidrBlock: 0.0.0.0/0
+      PortRange:
+        From: '0'  # client will be using ephemeral port, using 80 or 22 here will not work
+        To: '65535'
+
+
+#====== Associate Private Subnet for Nacl
+  RouteAssociationPrivateA:
+    Type: 'AWS::EC2::SubnetNetworkAclAssociation'
+    Properties:
+      SubnetId: !Ref PrivateSubnetA
+      NetworkAclId: !Ref customPublicNACL
+
+
+  RouteAssociationPrivateB:
+    Type: 'AWS::EC2::SubnetNetworkAclAssociation'
+    Properties:
+      SubnetId: !Ref PrivateSubnetB
+      NetworkAclId: !Ref customPublicNACL
+
+  ElastiCacheSubnetGroup:
+    Type: AWS::ElastiCache::SubnetGroup
+    Properties:
+      CacheSubnetGroupName: ElastiCacheSubnetGroup
+      Description: SubnetGroup fot CacheClusters
+      SubnetIds:
+      - !Ref PrivateSubnetA
+
+
+
+#=================== OUTPUTS ===========================
+Outputs:
+  VPC:
+    Description: ID for the VPC
+    Value: !Ref VPC
+    Export:
+      Name: VPC
+
+
+  PublicA:
+    Description: ID for Public Subnet A
+    Value: !Ref PublicSubnetA
+    Export:
+      Name: PublicA
+
+  PublicB:
+    Description: ID for Public Subnet B
+    Value: !Ref PublicSubnetB
+    Export:
+      Name: PublicB
+
+  PrivateA:
+    Description: ID for Private Subnet A
+    Value: !Ref PrivateSubnetA
+    Export:
+      Name: PrivateA
+
+  PrivateB:
+    Description: ID for Private Subnet B
+    Value: !Ref PrivateSubnetB
+    Export:
+      Name: PrivateB
+
+  ElastiCacheSubnetGroup:
+    Description: CacheSubnetGroupName
+    Value: !Ref ElastiCacheSubnetGroup
+    Export:
+      Name: ElastiCacheSG
