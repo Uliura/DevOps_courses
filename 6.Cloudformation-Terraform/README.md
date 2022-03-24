@@ -1,2 +1,7 @@
-# Put header here
-Put description here
+# CloudFormation
+Шаблоны заточены для us-east-1, маппинг не делал.
+Сделал два вида LoadBalancer'ов
+ACL и ограничения не настраивал, так как nginx не устанавливается с
+теми ограничениями которые заданы в условиях.
+![](CF.png)
+![](CF1.png)

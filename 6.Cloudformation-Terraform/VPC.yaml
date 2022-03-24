@@ -8,7 +8,6 @@ Metadata:
         Label:
           default: "Network Configuration"
         Parameters:
-          - Environment
           - VPCBlock
       -
         Label:
@@ -18,10 +17,6 @@ Metadata:
           - PublicSubnetBCIDR
           - PrivateSubnetACIDR
 Parameters:
-  Environment:
-    Type: String
-    Default: "DevOps-course"
-
   VPCBlock:
     Type: String
     Default: '10.0.0.0/16'

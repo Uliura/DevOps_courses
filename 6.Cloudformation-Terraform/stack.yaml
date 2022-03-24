@@ -11,7 +11,7 @@ Resources:
       TemplateURL: https://devops-cloud-formation.s3.eu-central-1.amazonaws.com/VPC.yaml
       Parameters:
         VPCBlock: 10.0.0.0/16
-        Environment: Itr-devops-course
+
 
   SecurityGroups:
     Type: AWS::CloudFormation::Stack

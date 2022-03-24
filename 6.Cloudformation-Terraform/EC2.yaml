@@ -16,15 +16,12 @@ Resources:
           SubnetId: !ImportValue PublicA
       AvailabilityZone: !Select [ 0, "Fn::GetAZs": { Ref: "AWS::Region" } ]
       KeyName: devops-course
-      UserData:
-        Fn::Base64: |
-          !Sub |
-            #!/bin/bash
-            echo "-------------------START-------------------"
-            sudo amazon-linux-extras install nginx1 -y
-            sudo systemctl enable nginx
-            sudo systemctl start nginx
-            echo "-------------------FINISH------------------"
+      UserData: !Base64
+        Fn::Sub: |
+          #!/bin/bash
+          sudo amazon-linux-extras install nginx1 -y
+          sudo systemctl enable nginx
+          sudo systemctl start nginx
       Tags:
       - Key: Name
         Value:
@@ -47,15 +44,12 @@ Resources:
           SubnetId: !ImportValue PublicB
       AvailabilityZone: !Select [ 1, "Fn::GetAZs": { Ref: "AWS::Region" } ]
       KeyName: devops-course
-      UserData:
-        Fn::Base64: |
-          !Sub |
-            #!/bin/bash
-            echo "-------------------START-------------------"
-            sudo amazon-linux-extras install nginx1 -y
-            sudo systemctl enable nginx
-            sudo systemctl start nginx
-            echo "-------------------FINISH------------------"
+      UserData: !Base64
+        Fn::Sub: |
+          #!/bin/bash
+          sudo amazon-linux-extras install nginx1 -y
+          sudo systemctl enable nginx
+          sudo systemctl start nginx
       Tags:
       - Key: Name
         Value:
