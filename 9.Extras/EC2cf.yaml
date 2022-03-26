@@ -126,7 +126,7 @@ Resources:
     Properties:
       InstanceType: !Ref InstanceType
       KeyName: !Ref KeyPairName
-      ImageId: ami-020b60a846a8e9575
+      ImageId: ami-0db66d96a591b5c3d
       SecurityGroupIds:
         - !Ref InstanceSecurityGroup
       SubnetId: !Ref PublicSubnetA
