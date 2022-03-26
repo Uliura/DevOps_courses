@@ -1,0 +1,201 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description:
+  Template for Itransition devops course
+
+
+Parameters:
+  VPC:
+    Description: Name of the base VPC stack
+    Type: 'AWS::EC2::VPC::Id'
+    Default: vpc-08a25ea1830002ba7
+
+  KeyPairName:
+    Description: Name of an existing EC2 KeyPair to enable SSH access to the instance
+    Type: 'AWS::EC2::KeyPair::KeyName'  # standard type
+    Default: devops-course
+    ConstraintDescription: must be the name of an existing EC2 KeyPair.
+
+  InstanceType:
+    Description: EC2 instance type
+    Type: String
+    Default: t2.micro
+    AllowedValues:
+      - t1.micro
+      - t2.nano
+      - t2.micro
+      - t2.small
+      - t2.medium
+      - t2.large
+
+  PublicIP:
+    Type: String
+    Default: "true"
+    AllowedValues:
+      - "true"
+      - "false"
+
+  EC2Name:
+    Type: String
+    Default: ec2-itransition-devops
+
+Conditions:
+  PublicIP: !Equals
+    - !Ref PublicIP
+    - 'true'
+
+Resources:
+
+  PublicSubnetA:
+    Type: "AWS::EC2::Subnet"
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: !Select [ 0, "Fn::GetAZs": { Ref: "AWS::Region" } ]
+      CidrBlock: '172.31.10.0/24'
+      MapPublicIpOnLaunch: !Ref PublicIP
+
+  PublicSubnetB:
+    Type: "AWS::EC2::Subnet"
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: !Select [ 1, "Fn::GetAZs": { Ref: "AWS::Region" } ]
+      CidrBlock: '172.31.11.0/24'
+      MapPublicIpOnLaunch: !Ref PublicIP
+
+  LoadBalancerSecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: Load Balancer Security Group
+      SecurityGroupIngress:
+        - CidrIp: 0.0.0.0/0
+          FromPort: 80
+          IpProtocol: tcp
+          ToPort: 80
+      VpcId: !Ref VPC
+
+  InstanceSecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: Instasnce Security Group
+      SecurityGroupIngress:
+        - CidrIp:  0.0.0.0/0
+          FromPort: 22
+          IpProtocol: tcp
+          ToPort: 22
+        - SourceSecurityGroupId: !Ref LoadBalancerSecurityGroup
+          FromPort: 80
+          IpProtocol: tcp
+          ToPort: 80
+      VpcId: !Ref VPC
+
+
+  RouteTableForPublicSubnet:                       # Creation of Empty Route Table
+    Type: "AWS::EC2::RouteTable"
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+      - Key: Name
+        Value:
+          !Join
+          - ''
+          - - 'public-route-table-'
+            - !Ref 'AWS::StackName'
+
+  RoutesForPublicRouteTable:                     # Creation and Attachment of Routes for Route Table
+    Type: "AWS::EC2::Route"
+    Properties:
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: igw-0bf4d3d3e833b4904
+      RouteTableId: !Ref RouteTableForPublicSubnet
+
+
+  RouteAssociationPublicA:
+    Type: "AWS::EC2::SubnetRouteTableAssociation"
+    Properties:
+      RouteTableId: !Ref RouteTableForPublicSubnet
+      SubnetId: !Ref PublicSubnetA
+
+  RouteAssociationPublicB:
+    Type: "AWS::EC2::SubnetRouteTableAssociation"
+    Properties:
+      RouteTableId: !Ref RouteTableForPublicSubnet
+      SubnetId: !Ref PublicSubnetB
+
+
+  EC2Instance:
+    Type: 'AWS::EC2::Instance'
+    Properties:
+      InstanceType: !Ref InstanceType
+      KeyName: !Ref KeyPairName
+      ImageId: ami-020b60a846a8e9575
+      SecurityGroupIds:
+        - !Ref InstanceSecurityGroup
+      SubnetId: !Ref PublicSubnetA
+      Tags:
+        - Key: Name
+          Value: !Ref EC2Name
+
+  LoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Name: ELB
+      Scheme: internet-facing
+      Type: application
+      SecurityGroups:
+        - !Ref LoadBalancerSecurityGroup
+      Subnets:
+        - !Ref PublicSubnetA
+        - !Ref PublicSubnetB
+      Tags:
+        - Key: Name
+          Value:
+            !Join
+            - ''
+            - - 'elb-'
+              - !Ref 'AWS::StackName'
+
+  LoadBalancerListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      LoadBalancerArn: !Ref LoadBalancer
+      Port: 80
+      Protocol: HTTP
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref DefaultTargetGroup
+
+  DefaultTargetGroup:
+    Type: 'AWS::ElasticLoadBalancingV2::TargetGroup'
+    Properties:
+      HealthCheckEnabled: 'true'
+      HealthCheckPath: /
+      HealthCheckPort: 80
+      HealthCheckProtocol: HTTP
+      Name: DefaultTargetGroup
+      Port: 80
+      Protocol: HTTP
+      Targets:
+        - Id: !Ref EC2Instance
+          Port: 80
+      TargetType: instance
+      HealthCheckIntervalSeconds: '10'
+      HealthyThresholdCount: '2'
+      UnhealthyThresholdCount: '3'
+      HealthCheckTimeoutSeconds: '5'
+      VpcId: !Ref VPC
+
+Outputs:
+  PublicIP:
+    Value: !If
+      - PublicIP
+      - !GetAtt
+        - EC2Instance
+        - PublicIp
+      - ''
+
+  ELB:
+    Value: !Join
+      - ''
+      - - 'http://'
+        - !GetAtt
+          - LoadBalancer
+          - DNSName
