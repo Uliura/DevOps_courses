@@ -34,9 +34,14 @@ Parameters:
       - "true"
       - "false"
 
-  EC2Name:
+  EC2NameA:
     Type: String
-    Default: ec2-itransition-devops
+    Default: ec2-itransition-devops-a
+
+  EC2NameB:
+    Type: String
+    Default: ec2-itransition-devops-b
+
 
 Conditions:
   PublicIP: !Equals
@@ -121,7 +126,7 @@ Resources:
       SubnetId: !Ref PublicSubnetB
 
 
-  EC2Instance:
+  EC2InstanceA:
     Type: 'AWS::EC2::Instance'
     Properties:
       InstanceType: !Ref InstanceType
@@ -132,7 +137,20 @@ Resources:
       SubnetId: !Ref PublicSubnetA
       Tags:
         - Key: Name
-          Value: !Ref EC2Name
+          Value: !Ref EC2NameA
+
+  EC2InstanceB:
+    Type: 'AWS::EC2::Instance'
+    Properties:
+      InstanceType: !Ref InstanceType
+      KeyName: !Ref KeyPairName
+      ImageId: ami-0db66d96a591b5c3d
+      SecurityGroupIds:
+        - !Ref InstanceSecurityGroup
+      SubnetId: !Ref PublicSubnetB
+      Tags:
+        - Key: Name
+          Value: !Ref EC2NameB
 
   LoadBalancer:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
@@ -174,7 +192,9 @@ Resources:
       Port: 80
       Protocol: HTTP
       Targets:
-        - Id: !Ref EC2Instance
+        - Id: !Ref EC2InstanceA
+          Port: 80
+        - Id: !Ref EC2InstanceB
           Port: 80
       TargetType: instance
       HealthCheckIntervalSeconds: '10'
@@ -184,11 +204,19 @@ Resources:
       VpcId: !Ref VPC
 
 Outputs:
-  PublicIP:
+  PublicIPA:
     Value: !If
       - PublicIP
       - !GetAtt
-        - EC2Instance
+        - EC2InstanceA
+        - PublicIp
+      - ''
+
+  PublicIPB:
+    Value: !If
+      - PublicIP
+      - !GetAtt
+        - EC2InstanceB
         - PublicIp
       - ''
 
