@@ -34,14 +34,9 @@ Parameters:
       - "true"
       - "false"
 
-  EC2NameA:
+  EC2Name:
     Type: String
-    Default: ec2-itransition-devops-a
-
-  EC2NameB:
-    Type: String
-    Default: ec2-itransition-devops-b
-
+    Default: ec2-itransition-devops
 
 Conditions:
   PublicIP: !Equals
@@ -82,14 +77,18 @@ Resources:
     Properties:
       GroupDescription: Instasnce Security Group
       SecurityGroupIngress:
-        - CidrIp:  0.0.0.0/0
+        - IpProtocol: tcp
           FromPort: 22
-          IpProtocol: tcp
           ToPort: 22
-        - SourceSecurityGroupId: !Ref LoadBalancerSecurityGroup
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
           FromPort: 80
-          IpProtocol: tcp
           ToPort: 80
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 9000
+          ToPort: 9000
+          CidrIp: 0.0.0.0/0
       VpcId: !Ref VPC
 
 
@@ -126,7 +125,7 @@ Resources:
       SubnetId: !Ref PublicSubnetB
 
 
-  EC2InstanceA:
+  EC2Instance:
     Type: 'AWS::EC2::Instance'
     Properties:
       InstanceType: !Ref InstanceType
@@ -137,20 +136,8 @@ Resources:
       SubnetId: !Ref PublicSubnetA
       Tags:
         - Key: Name
-          Value: !Ref EC2NameA
+          Value: !Ref EC2Name
 
-  EC2InstanceB:
-    Type: 'AWS::EC2::Instance'
-    Properties:
-      InstanceType: !Ref InstanceType
-      KeyName: !Ref KeyPairName
-      ImageId: ami-0db66d96a591b5c3d
-      SecurityGroupIds:
-        - !Ref InstanceSecurityGroup
-      SubnetId: !Ref PublicSubnetB
-      Tags:
-        - Key: Name
-          Value: !Ref EC2NameB
 
   LoadBalancer:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
@@ -183,18 +170,17 @@ Resources:
 
   DefaultTargetGroup:
     Type: 'AWS::ElasticLoadBalancingV2::TargetGroup'
+    DependsOn:
+      - LoadBalancer
     Properties:
       HealthCheckEnabled: 'true'
-      HealthCheckPath: /
+      HealthCheckPath: /wordpress/
       HealthCheckPort: 80
       HealthCheckProtocol: HTTP
-      Name: DefaultTargetGroup
       Port: 80
       Protocol: HTTP
       Targets:
-        - Id: !Ref EC2InstanceA
-          Port: 80
-        - Id: !Ref EC2InstanceB
+        - Id: !Ref EC2Instance
           Port: 80
       TargetType: instance
       HealthCheckIntervalSeconds: '10'
@@ -202,21 +188,15 @@ Resources:
       UnhealthyThresholdCount: '3'
       HealthCheckTimeoutSeconds: '5'
       VpcId: !Ref VPC
+      Matcher:
+        HttpCode: 200,302
 
 Outputs:
-  PublicIPA:
+  PublicIP:
     Value: !If
       - PublicIP
       - !GetAtt
-        - EC2InstanceA
-        - PublicIp
-      - ''
-
-  PublicIPB:
-    Value: !If
-      - PublicIP
-      - !GetAtt
-        - EC2InstanceB
+        - EC2Instance
         - PublicIp
       - ''
 
