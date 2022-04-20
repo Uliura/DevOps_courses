@@ -29,12 +29,12 @@ echo
 update_count()
 {
 case "$1" in
-  0) let "ones += 1";;
-  1) let "twos += 1";;
-  2) let "threes += 1";;
-  3) let "fours += 1";;
-  4) let "fives += 1";;
-  5) let "sixes += 1";;
+  0) (( "ones += 1" ));;
+  1) (( "twos += 1" ));;
+  2) (( "threes += 1" ));;
+  3) (( "fours += 1" ));;
+  4) (( "fives += 1" ));;
+  5) (( "sixes += 1" ));;
 esac
 }
 
@@ -42,9 +42,9 @@ echo
 
 while [ "$throw" -lt "$MAXTHROWS" ]
 do
-  let "die1 = RANDOM % $PIPS"
+  let "die1 = RANDOM % $PIPS" 
   update_count $die1
-  let "throw += 1"
+  (( "throw += 1" ))
 done
 
 print_result
