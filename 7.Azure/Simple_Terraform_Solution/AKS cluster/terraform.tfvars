@@ -1,0 +1,6 @@
+resource_group_name             = "resursegrpforcluster"
+resource_group_location         = "westeurope"
+k8s_dns_prefix_name             = "gekaaksclusterfortest"
+k8s_cluster_name                = "gekaaksclusterfortest"
+log_analytics_workspace_name    = "gekalganltcswsnm"
+log_analytics_solution_name     = "gekalganltcsslnm"
