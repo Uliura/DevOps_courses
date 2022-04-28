@@ -1,6 +1,7 @@
 variable "name" {
   description = "(Required) Specifies the name of the AKS cluster."
   type        = string
+  default = "k8s"
 }
 
 variable "resource_group_name" {
@@ -16,6 +17,7 @@ variable "location" {
 variable "dns_prefix" {
   description = "(Optional) DNS prefix specified when creating the managed cluster. Changing this forces a new resource to be created."
   type        = string
+  default     = "k8s"
 }
 
 
@@ -27,7 +29,7 @@ variable "default_node_pool_vm_size" {
 
 variable "default_node_pool_availability_zones" {
   description = "Specifies the availability zones of the default node pool"
-  default     = ["1", "2", "3"]
+  default     = []
   type        = list(string)
 }
 

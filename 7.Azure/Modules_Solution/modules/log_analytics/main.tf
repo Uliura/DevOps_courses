@@ -16,4 +16,7 @@ resource "azurerm_log_analytics_solution" "example" {
     publisher = "Microsoft"
     product   = "OMSGallery/Containers"
   }
+  depends_on = [
+    azurerm_log_analytics_workspace.example
+  ]  
 }
