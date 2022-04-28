@@ -1,6 +1,7 @@
-resource "azurerm_subnet" "SubnetA" {
+resource "azurerm_subnet" "subnet" {
   name                 = var.name
-  location             = var.location
+  resource_group_name = var.resource_group_name
   virtual_network_name = var.network_name
   address_prefixes     = var.address_prefixes
 }
+

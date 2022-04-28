@@ -14,10 +14,7 @@ variable "subnet_id" {
   type        = string
 }
 
-variable "public_ip_id" {
-  type        = string
+variable "public_ip_address_id" {
+  default = null
 }
 
-variable "ip_config_name" {
-  type        = string
-}
