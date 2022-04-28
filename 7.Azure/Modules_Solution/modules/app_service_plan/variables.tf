@@ -1,12 +1,3 @@
-variable "plan_size" {
-  description = "(Required) Tier of service plan"
-  type        = list
-  default     = {
-    tier = "Basic"
-    size = "B1"
-  }
-}
-
 variable "name" {
   description = "(Required) Specifies the name of the Container Registry. Changing this forces a new resource to be created."
   type        = string

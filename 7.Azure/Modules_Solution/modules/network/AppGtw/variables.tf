@@ -10,7 +10,7 @@ variable "location" {
   type        = string
 }
 
-variable "public_ip_id" {
+variable "public_ip_address_id" {
   type        = string
 }
 
@@ -18,6 +18,6 @@ variable "subnet_id" {
   type        = string
 }
 
-variable "app_domain" {
+variable "fqdns" {
   type        = list
 }

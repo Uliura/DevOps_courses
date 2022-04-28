@@ -27,7 +27,7 @@ resource "azurerm_application_gateway" "app_gateway" {
 
  frontend_ip_configuration {
     name                 = "front-end-ip-config"
-    public_ip_address_id = var.public_ip_id    
+    public_ip_address_id = var.public_ip_address_id    
   }
  
  ssl_certificate {
@@ -39,7 +39,7 @@ resource "azurerm_application_gateway" "app_gateway" {
   
   backend_address_pool {
     name      = "app"
-    fqdns     = var.app_domain
+    fqdns     = var.fqdns
   }  
 
   probe {
