@@ -30,7 +30,7 @@ module "public_ip" {
   location            = var.location
   
   depends_on = [
-    module.resource_group
+    module.container
   ]
 }
 
@@ -42,7 +42,7 @@ module "vnetwork" {
   address_space       = var.vnet_address_space
 
   depends_on = [
-    module.resource_group
+    module.public_ip
   ]  
 }
 
@@ -67,7 +67,7 @@ module "NICfe01" {
   public_ip_address_id   = module.public_ip.id
 
   depends_on = [
-    module.public_ip
+    module.subnetfe01
   ]
 }
 
@@ -80,7 +80,6 @@ module "file_server" {
   admin_password                   = "Azureuser123" 
   network_interface_id             = [module.NICfe01.id]
 
-#  custom_data = filebase64("install.ps1")
   depends_on = [
     module.NICfe01
   ]
@@ -88,7 +87,6 @@ module "file_server" {
 
 resource "azurerm_virtual_machine_extension" "software" {
   name                 = "install-software"
-#  resource_group_name  = var.resource_group_name
   virtual_machine_id   = module.file_server.id
   publisher            = "Microsoft.Compute"
   type                 = "CustomScriptExtension"
