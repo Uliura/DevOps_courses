@@ -19,4 +19,5 @@ resource "azurerm_windows_virtual_machine" "vm" {
     sku       = "2016-datacenter-gensecond"
     version   = "latest"
   }
+#  custom_data = var.custom_data
 }

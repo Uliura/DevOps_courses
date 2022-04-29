@@ -76,7 +76,34 @@ module "file_server" {
   name                             = var.fsvr_name
   resource_group_name              = var.resource_group_name
   location                         = var.location
+  admin_username                   = "azureuser"
+  admin_password                   = "Azureuser123" 
   network_interface_id             = [module.NICfe01.id]
 
-
+#  custom_data = filebase64("install.ps1")
+  depends_on = [
+    module.NICfe01
+  ]
 }
+
+resource "azurerm_virtual_machine_extension" "software" {
+  name                 = "install-software"
+#  resource_group_name  = var.resource_group_name
+  virtual_machine_id   = module.file_server.id
+  publisher            = "Microsoft.Compute"
+  type                 = "CustomScriptExtension"
+  type_handler_version = "1.9"
+
+  protected_settings = <<SETTINGS
+  {
+    "commandToExecute": "powershell -command \"[System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String('${base64encode(data.template_file.tf.rendered)}')) | Out-File -filepath install.ps1\" && powershell -ExecutionPolicy Unrestricted -File install.ps1 ${module.storage_account.key}"
+  }
+  SETTINGS
+}
+
+data "template_file" "tf" {
+    template = "${file("install.ps1")}"
+  depends_on = [
+    module.file_server
+  ]
+} 

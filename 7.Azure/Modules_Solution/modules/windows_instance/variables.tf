@@ -29,3 +29,4 @@ variable "network_interface_id" {
   type        = list(string)
   
 }
+# variable "custom_data" {}
