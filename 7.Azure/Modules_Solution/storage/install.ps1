@@ -29,7 +29,8 @@ $container = Get-AzStorageContainer -Name $ContainerName -Context $ctx
 '
 $script | out-file C:\AzCopy\script.ps1
 (Get-Content C:\AzCopy\script.ps1 -Raw) -Replace "QAZWSX", $key | Set-Content C:\AzCopy\script.ps1
+$User= "NT AUTHORITY\SYSTEM"
 $taskAction = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-File C:\AzCopy\script.ps1"
 $taskTrigger = New-ScheduledTaskTrigger -Daily -At 3PM
 $taskName = "ExportAppLog"
-Register-ScheduledTask -TaskName $taskName -Action $taskAction -Trigger $taskTrigger
+Register-ScheduledTask -TaskName $taskName -Trigger $taskTrigger -User $User -Action $taskAction -RunLevel Highest -Force

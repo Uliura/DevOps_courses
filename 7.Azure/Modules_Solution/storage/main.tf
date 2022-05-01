@@ -94,7 +94,7 @@ resource "azurerm_virtual_machine_extension" "software" {
 
   protected_settings = <<SETTINGS
   {
-    "commandToExecute": "powershell -command \"[System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String('${base64encode(data.template_file.tf.rendered)}')) | Out-File -filepath install.ps1\" && powershell -ExecutionPolicy Unrestricted -File install.ps1 ${module.storage_account.key}; exit 0;"
+    "commandToExecute": "powershell -command \"[System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String('${base64encode(data.template_file.tf.rendered)}')) | Out-File -filepath install.ps1\" && powershell -ExecutionPolicy Unrestricted -File install.ps1 ${module.storage_account.key} && exit 0;"
   }
   SETTINGS
   depends_on = [
