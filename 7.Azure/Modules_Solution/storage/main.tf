@@ -9,18 +9,14 @@ module "storage_account" {
   name                             = var.storage_account_name
   resource_group_name              = var.resource_group_name
   location                         = var.location
-  depends_on = [
-    module.resource_group
-  ]
+
 }
 
 module "container" {
   source = "../modules/storage_container"
   name                  = var.storage_container_name
   storage_account_name  = module.storage_account.name
-  depends_on = [
-    module.storage_account
-  ] 
+
 }
 
 module "public_ip" {
@@ -29,9 +25,7 @@ module "public_ip" {
   resource_group_name = var.resource_group_name
   location            = var.location
   
-  depends_on = [
-    module.container
-  ]
+
 }
 
 module "vnetwork" {
@@ -41,9 +35,7 @@ module "vnetwork" {
   location            = var.location
   address_space       = var.vnet_address_space
 
-  depends_on = [
-    module.public_ip
-  ]  
+ 
 }
 
 module "subnetfe01" {
@@ -53,9 +45,7 @@ module "subnetfe01" {
   network_name         = module.vnetwork.name
   address_prefixes     = ["10.0.1.0/24"]
 
-  depends_on = [
-    module.vnetwork
-  ]  
+  
 }
 
 module "NICfe01" {
@@ -66,9 +56,7 @@ module "NICfe01" {
   subnet_id              = module.subnetfe01.id
   public_ip_address_id   = module.public_ip.id
 
-  depends_on = [
-    module.subnetfe01
-  ]
+
 }
 
 module "file_server" {
@@ -80,9 +68,7 @@ module "file_server" {
   admin_password                   = "Azureuser123" 
   network_interface_id             = [module.NICfe01.id]
 
-  depends_on = [
-    module.NICfe01
-  ]
+
 }
 
 resource "azurerm_virtual_machine_extension" "software" {
@@ -97,9 +83,7 @@ resource "azurerm_virtual_machine_extension" "software" {
     "commandToExecute": "powershell -command \"[System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String('${base64encode(data.template_file.tf.rendered)}')) | Out-File -filepath install.ps1\" && powershell -ExecutionPolicy Unrestricted -File install.ps1 ${module.storage_account.key} && exit 0;"
   }
   SETTINGS
-  depends_on = [
-    module.file_server
-  ]
+
 }
 
 data "template_file" "tf" {

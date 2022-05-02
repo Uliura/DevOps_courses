@@ -12,7 +12,7 @@ variable "location" {
 
 variable "size" {
   type        = string
-  default     = "Standard_DC1ds_v3"
+  default     = "Standard_D2ads_v5"
 }
 
 variable "admin_username" {
